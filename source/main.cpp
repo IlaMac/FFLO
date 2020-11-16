@@ -54,7 +54,8 @@ void signal_callback_handler(int signum) {
     std::quick_exit(signum);
 }
 
-unsigned int Lx, Ly, Lz, N;
+unsigned int Lx, Ly, N;
+
 
 int main(int argc, char *argv[]){
     //std::vector<Node> Lattice;
@@ -115,6 +116,8 @@ int main(int argc, char *argv[]){
     signal(SIGKILL, signal_callback_handler);
     signal(SIGHUP, signal_callback_handler);
     signal(SIGQUIT, signal_callback_handler);
+    signal(SIGABRT, signal_callback_handler);
+    signal(SIGSEGV, signal_callback_handler);
 
     // std::at_quick_exit is called by "std::quick_exit(int)".
     // Note that std::quick_exit does not by itself catch termination codes
@@ -167,6 +170,7 @@ int main(int argc, char *argv[]){
     mainloop(Node, MCp, Hp, my_beta, my_ind, PTp, PTroot, directory_parameters_temp, NSTART);
 
     t_tot.toc();
+    MPI_Barrier(MPI_COMM_WORLD);
 
     std::cout << "Proccess current resident ram usage: " << process_memory_in_mb("VmRSS") << " MB" << std::endl;
     std::cout << "Proccess maximum resident ram usage: " << process_memory_in_mb("VmHWM") << " MB" << std::endl;
@@ -181,7 +185,6 @@ int main(int argc, char *argv[]){
 void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &Hp, double &my_beta, int &my_ind, struct PT_parameters PTp, struct PTroot_parameters PTroot, std::string directory_parameters_temp, int NSTART) {
 
     int n, t;
-    double inv_n_save= 1./2;//Inverse number of spin configurations I want to save
     class_tic_toc t_h5pp(true,5,"Benchmark h5pp");
     class_tic_toc t_metropolis(true,5,"Benchmark metropolis");
     class_tic_toc t_measures(true,5,"Benchmark measures");
@@ -190,6 +193,8 @@ void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &H
     Measures mis;
 
     std::string directory_write_temp;
+    std::string file_path;
+
     directory_write_temp=directory_parameters_temp+"/beta_"+std::to_string(my_ind);
     h5pp::File file;
 
@@ -223,6 +228,8 @@ void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &H
 
 
     for (n = NSTART; n<MCp.nmisu; n++) {
+        h5pp::print("This is rank {} checking in on line {} my directory is {}\n",my_ind,__LINE__, directory_write_temp);
+        MPI_Barrier(MPI_COMM_WORLD);
         for (t = 0; t < MCp.tau; t++) {
             t_metropolis.tic();
             metropolis(Site, MCp, Hp,  my_beta);
@@ -231,13 +238,24 @@ void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &H
         //Measures
         t_measures.tic();
         mis.reset();
+//        h5pp::print("This is rank {} n={}; E={}; Mx={}; My={}; Ipx={}; Ipy={}; jdx={}; jdy={}; nplus={}; nminus={}\n",my_ind,n, mis.E, mis.M[0], mis.M[1],
+//                    mis.ip[0], mis.ip[1], mis.jd[0], mis.jd[1], mis.rho_vplus, mis.rho_vminus);
+//        MPI_Barrier(MPI_COMM_WORLD);
+
         all_measures(mis, Hp, my_beta, Site);
 
         mis.my_rank=PTp.rank;
         t_measures.toc();
+        h5pp::print("This is rank {} checking in on line {}\n",my_ind,__LINE__);
+        h5pp::print("This is rank {} n={}; E={}; Mx={}; My={}; Ipx={}; Ipy={}; jdx={}; jdy={}; nplus={}; nminus={}, my_beta={}\n",my_ind,n, mis.E, mis.M[0], mis.M[1],
+                    mis.ip[0], mis.ip[1], mis.jd[0], mis.jd[1], mis.rho_vplus, mis.rho_vminus, my_beta);
+        MPI_Barrier(MPI_COMM_WORLD);
 
         t_h5pp.tic();
+        h5pp::print("Rank {} is about to open file {} at iteration {} line {}\n", my_ind, file.getFilePath(),n,__LINE__);
+        file.setLogLevel(0);
         file.appendTableRecords(mis, "Measurements");
+        file.setLogLevel(2);
         t_h5pp.toc();
         MPI_Barrier(MPI_COMM_WORLD);
 
@@ -247,14 +265,26 @@ void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &H
 
         //Save a configuration for the restarting
         save_lattice(Site, directory_write_temp, std::string("restart"));
-	    if((n%((int)(MCp.nmisu*inv_n_save)))==0){
+	    if(n%(MCp.n_autosave)==0){
 	    save_lattice(Site, directory_write_temp, std::string("n") + std::to_string(n));
 	    }
-	    //Parallel Tempering swap
+//	    //Parallel Tempering swap
+        h5pp::print("This is rank {} at iteration {} with energy {} checking in on line {}\n",my_ind, n, mis.E, __LINE__);
+        MPI_Barrier(MPI_COMM_WORLD);
         parallel_temp(mis.E, my_beta, my_ind, PTp, PTroot);
+        h5pp::print("This is rank {} checking in on line {} beta_new={}\n",my_ind,__LINE__, my_beta);
         //Files and directory
         directory_write_temp=directory_parameters_temp+"/beta_"+std::to_string(my_ind);
+        file_path= directory_write_temp + "/Output.h5";
+        fs::path out_file = file_path ;
+        if(fs::exists(out_file)){printf("Yes! rank %d \n ", my_ind);}
+        file = h5pp::File();
+        MPI_Barrier(MPI_COMM_WORLD);
+        file.setLogLevel(0);
         file = h5pp::File(directory_write_temp+"/Output.h5", h5pp::FilePermission::READWRITE);
+        file.setLogLevel(2);
+        h5pp::print("This is rank {} checking in on line {} my directory is {} par {} \n",my_ind,__LINE__, directory_write_temp, directory_parameters_temp);
+        MPI_Barrier(MPI_COMM_WORLD);
     }
     save_lattice(Site, directory_write_temp, std::string("final"));
 
@@ -268,10 +298,9 @@ void parallel_temp(double &my_E , double &my_beta, int &my_ind, struct PT_parame
     double coin;
     double n_rand, delta_E, delta_beta;
     double oldbeta_i, oldbeta_nn;
-    int i=0, nn=0, ind_nn;
+    int i=0, nn=0, ind_nn=0;
     int oldrank_i, oldrank_nn;
     int newrank_i, newrank_nn;
-
 
     MPI_Gather(&my_E, 1, MPI_DOUBLE, PTroot.All_Energies.data(), 1, MPI_DOUBLE, PTp.root, MPI_COMM_WORLD);
     if (PTp.rank == PTp.root) { //Root forms the pairs and decides (given the energies and the betas) which pairs will swap
@@ -285,14 +314,16 @@ void parallel_temp(double &my_E , double &my_beta, int &my_ind, struct PT_parame
         while (i < PTp.np) {
             n_rand=rn::uniform_real_box(0,1);
             ind_nn=(PTp.np + i + nn) % PTp.np;
+            if(i < 0) throw std::logic_error(h5pp::format("i = {}. Expected positive value",i));
+            if(ind_nn < 0 && ind_nn < PTp.np) throw std::logic_error(h5pp::format("ind_nn = {}. Expected positive value",ind_nn));
             oldrank_i=PTroot.ind_to_rank[i];
             oldrank_nn=PTroot.ind_to_rank[ind_nn];
             delta_E = PTroot.All_Energies[oldrank_i] - PTroot.All_Energies[oldrank_nn];
             delta_beta = PTroot.beta[oldrank_i] - PTroot.beta[oldrank_nn];
+
             //swapping condition
             //Boltzmann weight: exp(-\beta E) E= h³ \sum_i E(i)
             if (n_rand < exp(delta_beta * delta_E)) {
-
                 //swap indices in the rank_to_ind array
                 PTroot.rank_to_ind[oldrank_i] = ind_nn;
                 PTroot.rank_to_ind[oldrank_nn] = i;
@@ -307,6 +338,7 @@ void parallel_temp(double &my_E , double &my_beta, int &my_ind, struct PT_parame
                 oldbeta_nn= PTroot.beta[oldrank_nn];
                 PTroot.beta[oldrank_i] = oldbeta_nn;
                 PTroot.beta[oldrank_nn] = oldbeta_i;
+                printf("We swap!\n");
             }
                 i+= 2;
         }

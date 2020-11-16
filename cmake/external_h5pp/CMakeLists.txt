@@ -15,7 +15,7 @@ project(external-h5pp CXX)
 
 option(BUILD_SHARED_LIBS               "Builds shared libraries"                                     OFF)
 option(H5PP_BUILD_EXAMPLES             "Builds examples"                                             OFF)
-option(H5PP_ENABLE_TESTS               "Enable testing"                                              ON)
+option(H5PP_ENABLE_TESTS               "Enable testing"                                              OFF)
 option(H5PP_DEPS_IN_SUBDIR             "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"    ON)
 option(H5PP_PREFER_CONDA_LIBS          "Search for dependencies from anaconda first"                 OFF)
 option(H5PP_PRINT_INFO                 "Print info during cmake configuration"                       ON)
@@ -28,7 +28,7 @@ option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared librarie
 include(ExternalProject)
 ExternalProject_Add(external_h5pp
         GIT_REPOSITORY https://github.com/DavidAce/h5pp.git
-        GIT_TAG master
+        GIT_TAG "771267565994c59f5819661bff82b2985cd7175a"
         GIT_PROGRESS TRUE
         GIT_SHALLOW TRUE
         BUILD_ALWAYS TRUE
@@ -59,7 +59,7 @@ ExternalProject_Add(external_h5pp
         -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=TRUE
         -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=TRUE
-        -DCMAKE_FIND_DEBUG_MODE:BOOL=ON
+        -DCMAKE_FIND_DEBUG_MODE:BOOL=OFF
         # h5pp flags
         -DH5PP_BUILD_EXAMPLES:BOOL=${H5PP_BUILD_EXAMPLES}
         -DH5PP_ENABLE_TESTS:BOOL=${H5PP_ENABLE_TESTS}

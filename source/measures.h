@@ -21,7 +21,6 @@ struct Measures{
     double rho_vplus=0.;
     double rho_vminus=0.;
 
-
     int my_rank = 0;
     void reset(){
         *this = Measures();

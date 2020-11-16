@@ -69,7 +69,7 @@ void metropolis( struct O2* Spin, struct MC_parameters &MCp, struct H_parameters
                     + 0.5*sin(newS.t - Spin[nn_imy].t)*sin(Spin[nn_imy].t - Spin[nn_immy].t)
                     +0.5*sin(Spin[nn_ippy].t - Spin[nn_ipy].t)*sin(Spin[nn_ipy].t + newS.t));
 
-            minusdeltaE2= (E_old-E_new);
+            minusdeltaE2= Hp.dx*Hp.dy*(E_old-E_new);
 
             if(minusdeltaE2>0){
                 Spin[i].x=newS.x;
@@ -85,7 +85,6 @@ void metropolis( struct O2* Spin, struct MC_parameters &MCp, struct H_parameters
             }
         }
     }
-
     MCp.a_T= (double)preso*invV;
 
 }

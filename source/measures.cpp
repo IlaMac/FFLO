@@ -29,14 +29,14 @@ void all_measures(struct Measures &mis, struct H_parameters &Hp, double my_beta,
         for (ix=0; ix<Lx; ix++) {
 
             i=ix+iy*Lx;
-            ipx = (ix == Lx - 1 ? 0 : ix + 1);
+            ipx=mod(ix+1,Lx);
             nn_ipx = ipx + Lx*iy;
-            ipy = (iy == Ly - 1 ? 0 : iy + 1);
+            ipy=mod(iy+1,Ly);
             nn_ipy = ix + Lx*ipy;
-            imy = (iy == 0? Ly-1 : iy - 1);
+            imy = mod(iy-1,Ly);
             nn_imy = ix+ Lx*imy;
             /*Energy*/
-            mis.E+=( Kx*(1. -O2prod(Spin[i], Spin[nn_ipx])) + (1. -O2prod(Spin[i], Spin[nn_ipy]))
+            mis.E+=Hp.dx*Hp.dy*( Kx*(1. -O2prod(Spin[i], Spin[nn_ipx])) + (1. -O2prod(Spin[i], Spin[nn_ipy]))
                     - 0.5*sin(-Spin[i].t + Spin[nn_ipy].t)*sin(-Spin[nn_imy].t + Spin[i].t) );
 
             /*Magetization*/
@@ -81,6 +81,7 @@ void all_measures(struct Measures &mis, struct H_parameters &Hp, double my_beta,
             }
         }
     }
+
 
     mis.E*= invV;
     mis.M[0]*=invV;

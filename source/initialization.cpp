@@ -19,10 +19,10 @@ void initialize_Hparameters(struct H_parameters &Hp, const fs::path & directory_
             //With this modification Hp.beta in not anymore part of the Hamiltonian parameters list
         }
     }else{
-        Hp.dx=C_TWO_PI;
-        Hp.dy=C_TWO_PI;
-        Hp.b_low=0.3;
-        Hp.b_high=0.01;
+        Hp.dx=C_TWO_PI/4;
+        Hp.dy=C_TWO_PI/4;
+        Hp.b_low=0.1;
+        Hp.b_high=0.6;
         Hp.init=1;
     }
 
@@ -42,9 +42,9 @@ void initialize_MCparameters(struct MC_parameters &MCp, const fs::path & directo
             fclose(fin);
         }
     }else{
-        MCp.nmisu=20;
-        MCp.tau=32;
-        MCp.n_autosave=20000; //not used now
+        MCp.nmisu=100;
+        MCp.tau=10;
+        MCp.n_autosave=200; //not used now
         MCp.acc=0.5;
         MCp.a_T=0.5;
     }
