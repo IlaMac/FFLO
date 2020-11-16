@@ -64,7 +64,6 @@ int main(int argc, char *argv[]){
     struct MC_parameters MCp;
     struct PT_parameters PTp;
     struct PTroot_parameters PTroot;
-    unsigned int i, alpha, vec;
     long int seednumber=-1; /*by default it is a negative number which means that rng will use random_device*/
     double my_beta=0.244;
     int my_ind=0;
@@ -226,10 +225,8 @@ void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &H
 
     file.createTable(MY_HDF5_MEASURES_TYPE, "Measurements", "Measures");
 
-
     for (n = NSTART; n<MCp.nmisu; n++) {
-        h5pp::print("This is rank {} checking in on line {} my directory is {}\n",my_ind,__LINE__, directory_write_temp);
-        MPI_Barrier(MPI_COMM_WORLD);
+
         for (t = 0; t < MCp.tau; t++) {
             t_metropolis.tic();
             metropolis(Site, MCp, Hp,  my_beta);
@@ -238,24 +235,14 @@ void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &H
         //Measures
         t_measures.tic();
         mis.reset();
-//        h5pp::print("This is rank {} n={}; E={}; Mx={}; My={}; Ipx={}; Ipy={}; jdx={}; jdy={}; nplus={}; nminus={}\n",my_ind,n, mis.E, mis.M[0], mis.M[1],
-//                    mis.ip[0], mis.ip[1], mis.jd[0], mis.jd[1], mis.rho_vplus, mis.rho_vminus);
-//        MPI_Barrier(MPI_COMM_WORLD);
 
         all_measures(mis, Hp, my_beta, Site);
 
         mis.my_rank=PTp.rank;
         t_measures.toc();
-        h5pp::print("This is rank {} checking in on line {}\n",my_ind,__LINE__);
-        h5pp::print("This is rank {} n={}; E={}; Mx={}; My={}; Ipx={}; Ipy={}; jdx={}; jdy={}; nplus={}; nminus={}, my_beta={}\n",my_ind,n, mis.E, mis.M[0], mis.M[1],
-                    mis.ip[0], mis.ip[1], mis.jd[0], mis.jd[1], mis.rho_vplus, mis.rho_vminus, my_beta);
-        MPI_Barrier(MPI_COMM_WORLD);
 
         t_h5pp.tic();
-        h5pp::print("Rank {} is about to open file {} at iteration {} line {}\n", my_ind, file.getFilePath(),n,__LINE__);
-        file.setLogLevel(0);
         file.appendTableRecords(mis, "Measurements");
-        file.setLogLevel(2);
         t_h5pp.toc();
         MPI_Barrier(MPI_COMM_WORLD);
 
@@ -268,22 +255,12 @@ void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &H
 	    if(n%(MCp.n_autosave)==0){
 	    save_lattice(Site, directory_write_temp, std::string("n") + std::to_string(n));
 	    }
-//	    //Parallel Tempering swap
-        h5pp::print("This is rank {} at iteration {} with energy {} checking in on line {}\n",my_ind, n, mis.E, __LINE__);
-        MPI_Barrier(MPI_COMM_WORLD);
+	    //Parallel Tempering swap
         parallel_temp(mis.E, my_beta, my_ind, PTp, PTroot);
-        h5pp::print("This is rank {} checking in on line {} beta_new={}\n",my_ind,__LINE__, my_beta);
+
         //Files and directory
         directory_write_temp=directory_parameters_temp+"/beta_"+std::to_string(my_ind);
-        file_path= directory_write_temp + "/Output.h5";
-        fs::path out_file = file_path ;
-        if(fs::exists(out_file)){printf("Yes! rank %d \n ", my_ind);}
-        file = h5pp::File();
-        MPI_Barrier(MPI_COMM_WORLD);
-        file.setLogLevel(0);
         file = h5pp::File(directory_write_temp+"/Output.h5", h5pp::FilePermission::READWRITE);
-        file.setLogLevel(2);
-        h5pp::print("This is rank {} checking in on line {} my directory is {} par {} \n",my_ind,__LINE__, directory_write_temp, directory_parameters_temp);
         MPI_Barrier(MPI_COMM_WORLD);
     }
     save_lattice(Site, directory_write_temp, std::string("final"));
