@@ -13,7 +13,7 @@ void all_measures(struct Measures &mis, struct H_parameters &Hp, double my_beta,
     double n=0.;
     double invV=1./N;
 
-    Kx=2*(power(Hp.dy,4)/ power(Hp.dx,2));
+    Kx=2*((Hp.dy*Hp.dy*Hp.dy*Hp.dy)/ (Hp.dx*Hp.dx));
 
     /*Ridefinisco tutti gli angoli compresi tra -pi e pi*/
     for(ix=0; ix<Lx; ix++){

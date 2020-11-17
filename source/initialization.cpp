@@ -6,6 +6,8 @@
 
 void initialize_Hparameters(struct H_parameters &Hp, const fs::path & directory_parameters){
 
+    printf("initialize_Hparameters\n");
+
     fs::path hp_init_file = directory_parameters / "HP_init.txt";
     if(fs::exists(hp_init_file)){
         FILE *fin= nullptr;
@@ -25,10 +27,12 @@ void initialize_Hparameters(struct H_parameters &Hp, const fs::path & directory_
         Hp.b_high=0.6;
         Hp.init=1;
     }
+    printf("dx %lf dy %lf blow %lf bhigh %lf init %d\n", Hp.dx, Hp.dy, Hp.b_low, Hp.b_high, Hp.init);
 
 }
 
 void initialize_MCparameters(struct MC_parameters &MCp, const fs::path & directory_parameters){
+    printf("initialize_MCparameters\n");
 
     fs::path mc_init_file = directory_parameters / "MC_init.txt";
     if(fs::exists(mc_init_file)){
@@ -114,4 +118,4 @@ void initialize_PTarrays(struct PT_parameters &PTp, struct PTroot_parameters &PT
         PTroot.ind_to_rank[p]=p;
         PTroot.beta[p]=beta_low + p*delta_beta;
     }
-};
+}

@@ -12,8 +12,9 @@ void metropolis( struct O2* Spin, struct MC_parameters &MCp, struct H_parameters
     double Epsilon=0, minusdeltaE2=0, rnorm=0, norm=0;
     double acc_rate=0.5, acc_T=0.;
     double E_old=0., E_new=0.;
-    double Kx;
+    double Kx=0.;
     struct O2 Sp, newS;
+
     double invV=1./N;
 
     Sp.x=0.;
@@ -23,8 +24,7 @@ void metropolis( struct O2* Spin, struct MC_parameters &MCp, struct H_parameters
     newS.y=0.;
     newS.t=0.;
 
-    Kx=2*(power(Hp.dy,4)/ power(Hp.dx,2));
-
+    Kx=2*((Hp.dy*Hp.dy*Hp.dy*Hp.dy)/ (Hp.dx*Hp.dx));
     /*Procedo col metropolis in ordine, sito per sito, perdo la reversibilità del processo, ma guadagno in efficienza e velocità */
     for(iy=0; iy<Ly; iy++){
         for(ix=0; ix<Lx; ix++){

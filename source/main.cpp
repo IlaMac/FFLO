@@ -64,6 +64,7 @@ int main(int argc, char *argv[]){
     struct MC_parameters MCp;
     struct PT_parameters PTp;
     struct PTroot_parameters PTroot;
+    unsigned int i, alpha, vec;
     long int seednumber=-1; /*by default it is a negative number which means that rng will use random_device*/
     double my_beta=0.244;
     int my_ind=0;
@@ -225,6 +226,7 @@ void mainloop(struct O2* Site, struct MC_parameters &MCp, struct H_parameters &H
 
     file.createTable(MY_HDF5_MEASURES_TYPE, "Measurements", "Measures");
 
+
     for (n = NSTART; n<MCp.nmisu; n++) {
 
         for (t = 0; t < MCp.tau; t++) {
@@ -315,7 +317,6 @@ void parallel_temp(double &my_E , double &my_beta, int &my_ind, struct PT_parame
                 oldbeta_nn= PTroot.beta[oldrank_nn];
                 PTroot.beta[oldrank_i] = oldbeta_nn;
                 PTroot.beta[oldrank_nn] = oldbeta_i;
-                printf("We swap!\n");
             }
                 i+= 2;
         }
