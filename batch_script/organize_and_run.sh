@@ -15,7 +15,7 @@ fi
 
 RESTART=0
 pi_greek="3.14159265359"
-LLIST="8"
+LLIST="8 16 32 64 128"
 ############ Parameters of the Hamiltonian ---> HP_init.txt in a directory whose name contains the main parameters values##################
 H_dx=$(echo '3.14159265359/8' | bc -l)
 H_dy=$(echo '3.14159265359/8' | bc -l)
@@ -25,9 +25,9 @@ H_init=1 #If H_init=0: phases initialized to zero; H_init=1: phases initialized 
 
 ############ Parameters for the Monte Carlo simulations --> MC_init.txt#####################
 
-Nmisu=200
+Nmisu=200000
 ntau=32
-n_autosave=10
+n_autosave=200
 acc=0.5
 a_T=0.5
 
@@ -84,8 +84,8 @@ echo $a_T >> MC_init.txt
 #################Creation of the submit_runs script#########################
 
 jobname="L${L}_dx_2pi_8_dy_2pi_8_bmin${H_blow}_bmax${H_bhigh}_init${H_init}"
-nnodes=1
-ntasks=2 #parallel tempering over ntasks temperatures
+nnodes=2
+ntasks=64 #parallel tempering over ntasks temperatures
 
 #I create ntasks folder: one for each rank.
 
@@ -121,7 +121,7 @@ EXECUTE_DIR="../build/Release"
 
 echo "#!/bin/bash
 #SBATCH --job-name=${jobname}          # Name of the job
-#SBATCH --time=0-00:05:00               # Allocation time
+#SBATCH --time=7-00:00:00               # Allocation time
 #SBATCH --mem-per-cpu=2000              # Memory per allocated cpu
 #SBATCH --nodes=${nnodes}               # Number of nodes
 #SBATCH --ntasks=${ntasks}
