@@ -12,10 +12,10 @@ void initialize_Hparameters(struct H_parameters &Hp, const fs::path & directory_
     if(fs::exists(hp_init_file)){
         FILE *fin= nullptr;
         if((fin=fopen(hp_init_file.c_str(), "r"))) {
-            fscanf(fin, "%d" , aux_dx);
-            Hp.dx=C_TWO_PI/aux_dx;
-            fscanf(fin, "%d" , aux_dy );
-            Hp.dy=C_TWO_PI/aux_dy;
+            fscanf(fin, "%d" , &aux_dx);
+            Hp.dx=(double) C_TWO_PI/aux_dx;
+            fscanf(fin, "%d" , &aux_dy );
+            Hp.dy=(double)C_TWO_PI/aux_dy;
             fscanf(fin, "%lf" , &Hp.b_low);
             fscanf(fin, "%lf" , &Hp.b_high);
             fscanf(fin, "%d" , &Hp.init);
