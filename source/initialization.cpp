@@ -7,13 +7,15 @@
 void initialize_Hparameters(struct H_parameters &Hp, const fs::path & directory_parameters){
 
     printf("initialize_Hparameters\n");
-
+    int aux_dx, aux_dy;
     fs::path hp_init_file = directory_parameters / "HP_init.txt";
     if(fs::exists(hp_init_file)){
         FILE *fin= nullptr;
         if((fin=fopen(hp_init_file.c_str(), "r"))) {
-            fscanf(fin, "%lf" , &Hp.dx);
-            fscanf(fin, "%lf" , &Hp.dy);
+            fscanf(fin, "%d" , aux_dx);
+            Hp.dx=C_TWO_PI/aux_dx;
+            fscanf(fin, "%d" , aux_dy );
+            Hp.dy=C_TWO_PI/aux_dy;
             fscanf(fin, "%lf" , &Hp.b_low);
             fscanf(fin, "%lf" , &Hp.b_high);
             fscanf(fin, "%d" , &Hp.init);

@@ -14,11 +14,11 @@ fi
 #RESTART=2-> Restart from the previois final scenario
 
 RESTART=0
-pi_greek="3.14159265359"
 LLIST="8 16 32 64 128"
 ############ Parameters of the Hamiltonian ---> HP_init.txt in a directory whose name contains the main parameters values##################
-H_dx=$(echo '3.14159265359/8' | bc -l)
-H_dy=$(echo '3.14159265359/8' | bc -l)
+
+H_dx=8 #Hp.dx=2pi/8
+H_dy=8
 H_blow=0.1
 H_bhigh=4.0
 H_init=1 #If H_init=0: phases initialized to zero; H_init=1: phases initialized randomly
@@ -37,33 +37,33 @@ for L in $LLIST; do
 
 cd ${BASEDIR}/Output_FFLO
 
-if [ ! -d ./Sdx_2pi_8_dy_2pi_8 ]; then
-   mkdir -p dx_2pi_8_dy_2pi_8
+if [ ! -d ./Sdx_2pi_${H_dx}_dy_2pi_${H_dy} ]; then
+   mkdir -p dx_2pi_${H_dx}_dy_2pi_${H_dy}
 fi
 
-cd dx_2pi_8_dy_2pi_8
+cd dx_2pi_${H_dx}_dy_2pi_${H_dy}
 
 
-if [ ! -d ./SL${L}_dx_2pi_8_dy_2pi_8_bmin${H_blow}_bmax${H_bhigh}_init${H_init} ]; then
-   mkdir -p L${L}_dx_2pi_8_dy_2pi_8_bmin${H_blow}_bmax${H_bhigh}_init${H_init}
+if [ ! -d ./SL${L}_dx_2pi_${H_dx}_dy_2pi_${H_dy}_bmin${H_blow}_bmax${H_bhigh}_init${H_init} ]; then
+   mkdir -p L${L}_dx_2pi_${H_dx}_dy_2pi_${H_dy}_bmin${H_blow}_bmax${H_bhigh}_init${H_init}
 fi
 
-OUTPUT=${BASEDIR}/Output_FFLO/dx_2pi_8_dy_2pi_8/L${L}_dx_2pi_8_dy_2pi_8_bmin${H_blow}_bmax${H_bhigh}_init${H_init}
+OUTPUT=${BASEDIR}/Output_FFLO/dx_2pi_${H_dx}_dy_2pi_${H_dy}/L${L}_dx_2pi_${H_dx}_dy_2pi_${H_dy}_bmin${H_blow}_bmax${H_bhigh}_init${H_init}
 
 cd /tmp/Output_x_ilaria
 
-if [ ! -d ./Sdx_2pi_8_dy_2pi_8 ]; then
-   mkdir -p dx_2pi_8_dy_2pi_8
+if [ ! -d ./Sdx_2pi_${H_dx}_dy_2pi_${H_dy} ]; then
+   mkdir -p dx_2pi_${H_dx}_dy_2pi_${H_dy}
 fi
 
-cd dx_2pi_8_dy_2pi_8
+cd dx_2pi_${H_dx}_dy_2pi_${H_dy}
 
-if [ ! -d ./SL${L}_dx_2pi_8_dy_2pi_8_bmin${H_blow}_bmax${H_bhigh}_init${H_init} ]; then
-   mkdir -p L${L}_dx_2pi_8_dy_2pi_8_bmin${H_blow}_bmax${H_bhigh}_init${H_init}
+if [ ! -d ./SL${L}_dx_2pi_${H_dx}_dy_2pi_${H_dy}_bmin${H_blow}_bmax${H_bhigh}_init${H_init} ]; then
+   mkdir -p L${L}_dx_2pi_${H_dx}_dy_2pi_${H_dy}_bmin${H_blow}_bmax${H_bhigh}_init${H_init}
 fi
 
 
-OUTPUT_TEMP=/tmp/Output_x_ilaria/dx_2pi_8_dy_2pi_8/L${L}_dx_2pi_8_dy_2pi_8_bmin${H_blow}_bmax${H_bhigh}_init${H_init}
+OUTPUT_TEMP=/tmp/Output_x_ilaria/dx_2pi_${H_dx}_dy_2pi_${H_dy}/L${L}_dx_2pi_${H_dx}_dy_2pi_${H_dy}_bmin${H_blow}_bmax${H_bhigh}_init${H_init}
 
 cd ${OUTPUT}
 
@@ -83,7 +83,7 @@ echo $a_T >> MC_init.txt
 
 #################Creation of the submit_runs script#########################
 
-jobname="L${L}_dx_2pi_8_dy_2pi_8_bmin${H_blow}_bmax${H_bhigh}_init${H_init}"
+jobname="L${L}_dx_2pi_${H_dx}_dy_2pi_${H_dy}_bmin${H_blow}_bmax${H_bhigh}_init${H_init}"
 nnodes=2
 ntasks=64 #parallel tempering over ntasks temperatures
 
